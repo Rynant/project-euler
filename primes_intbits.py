@@ -1,30 +1,30 @@
 import math
 from collections import defaultdict
-from bitstring import BitArray
 
 primes = [2, 3, 5, 7, 11, 13, 17, 19]
-primes_ba = BitArray()
+primes_ba = 0
 
 
 def init_prime_bitarray(maxnum):
-    """Initialize a bitarray with the supplied length, and find primes with
-    a prime sieve."""
     global primes_ba
     maxnum += 1
-    primes_ba = BitArray(maxnum)
-    primes_ba.set(1)
-    primes_ba[0], primes_ba[1] = [0, 0]
+    # Initialize all bits except for bits 0 and 1 to true (1)
+    primes_ba = (1 << (maxnum-2)) - 1 << 2
     for i in [2] + list(range(3, maxnum, 2)):
-        if primes_ba[i]:
+        # If bit i is on (i is prime) set multiples
+        if primes_ba >> i & 1:
             for j in range(i + i, maxnum, i):
-                primes_ba[j] = 0
+                primes_ba &= ~(1 << j)
 
 
 def bitarray_to_list():
-    """Return the primes in the initialized primes_ba as a list."""
     global primes, primes_ba
-    if primes_ba:
-        primes = [num for num, isprime in enumerate(primes_ba) if isprime]
+    primes = []
+    i = 2
+    while primes_ba >> i:
+        if primes_ba >> i & 1:
+            primes.append(i)
+        i += 1
 
 
 def possible_divisors(num):
@@ -52,7 +52,7 @@ def next_prime():
 
 
 def prime_after(num):
-    """Return the smallest prime greater than a given number."""
+    """Returns the smallest prime greater than a given number."""
     if primes[-1] > num:
         for i in primes:
             if i > num:
@@ -76,7 +76,6 @@ def append_nth_prime(n):
 
 
 def get_nth_prime(n):
-    """Return the Nth prime."""
     append_nth_prime(n)
     return primes[n - 1]
 
@@ -106,13 +105,11 @@ def is_prime(num):
     return True
 
 def gcd(a, b):
-    """Return the greatest common divisor of two integers."""
     while b:
         a, b = b, a % b
     return a
 
 def lcm(a, b):
-    """Return the least common multiple of two integers."""
     return a // gcd(a, b) * b
 
 
